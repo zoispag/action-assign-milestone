@@ -1,0 +1,13 @@
+name: 'Assign a milestone to issues and pull requests'
+description: 'Assign a milestone to issues and pull requests'
+author: 'zoispag'
+branding:
+  icon: 'plus'
+  color: 'orange'
+inputs:
+  milestone:
+    description: 'Name of milestone to be assigned'
+    required: true
+runs:
+  using: 'node12'
+  main: 'dist/index.js'

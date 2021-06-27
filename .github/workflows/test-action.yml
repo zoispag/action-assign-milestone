@@ -1,0 +1,14 @@
+name: 'Auto Project Assign'
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  assign-milestone:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: ./
+        with:
+          milestone: 'roadmap'
