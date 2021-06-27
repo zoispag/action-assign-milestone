@@ -1,0 +1,16 @@
+name: 'Assign a milestone to pull requests'
+description: 'Assign a milestone to pull requests'
+author: 'zoispag'
+branding:
+  icon: 'plus'
+  color: 'orange'
+inputs:
+  repo-token:
+    description: 'Repo token'
+    required: true
+  milestone:
+    description: 'Name of milestone to be assigned'
+    required: true
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
