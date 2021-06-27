@@ -1,39 +1,21 @@
-import { setFailed, getInput, setOutput } from '@actions/core'
-import { graphql } from '@octokit/graphql'
+import { info, setFailed, getInput } from '@actions/core'
 import { context } from '@actions/github'
-
-const findMilestoneByName = async (milestoneName: String): Promise<Number> => {
-  const repoToken = getInput('repo-token', { required: true })
-
-  const { repository } = await graphql(
-    `{
-      repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
-        milestones(query: "${milestoneName}", last: 1) {
-          nodes {
-            number
-          }
-        }
-      }
-    }`,
-    {
-      headers: {
-        authorization: `token ${repoToken}`,
-      },
-    },
-  )
-
-  return repository.milestones.nodes[0]?.number || 0
-}
+import {
+  findMilestoneByName,
+  assignMilestoneOnPullRequest,
+} from './milestone-actions'
 
 async function run(): Promise<void> {
   try {
-    const milestoneName = getInput('milestone')
-    const milestoneId = await findMilestoneByName(milestoneName)
-    setOutput('milestoneId', milestoneId)
+    const token = getInput('repo-token', { required: true })
+    const searchName = getInput('milestone', { required: true })
 
-    if (milestoneId === 0) {
-      throw new Error(`Milestone with name '${milestoneName}'`)
-    }
+    const { title, id } = await findMilestoneByName(token, searchName)
+    assignMilestoneOnPullRequest(token, id)
+
+    info(
+      `Milestone ${title} has been assigned to PR #${context.payload.pull_request?.number}`,
+    )
   } catch ({ message }) {
     setFailed(message)
   }

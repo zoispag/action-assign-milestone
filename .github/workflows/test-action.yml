@@ -1,14 +1,16 @@
-name: 'Auto Project Assign'
+name: 'test: Auto Project Assign'
 
 on:
   pull_request:
-    types: [opened]
+    types: [opened, reopened]
 
 jobs:
   assign-milestone:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v2
       - uses: ./
         with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
           milestone: 'roadmap'

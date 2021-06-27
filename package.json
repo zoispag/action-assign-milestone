@@ -1,7 +1,7 @@
 {
   "name": "action-assign-milestone",
   "version": "1.0.0",
-  "description": "GitHub action to assign a milestone to issues and pull requests",
+  "description": "GitHub action to assign a milestone to issues",
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc",
