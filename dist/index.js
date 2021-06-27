@@ -17,35 +17,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core_1 = __nccwpck_require__(186);
-const graphql_1 = __nccwpck_require__(467);
 const github_1 = __nccwpck_require__(438);
-const findMilestoneByName = (milestoneName) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const repoToken = core_1.getInput('repo-token', { required: true });
-    const { repository } = yield graphql_1.graphql(`{
-      repository(owner: "${github_1.context.repo.owner}", name: "${github_1.context.repo.repo}") {
-        milestones(query: "${milestoneName}", last: 1) {
-          nodes {
-            number
-          }
-        }
-      }
-    }`, {
-        headers: {
-            authorization: `token ${repoToken}`,
-        },
-    });
-    return ((_a = repository.milestones.nodes[0]) === null || _a === void 0 ? void 0 : _a.number) || 0;
-});
+const milestone_actions_1 = __nccwpck_require__(415);
 function run() {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const milestoneName = core_1.getInput('milestone');
-            const milestoneId = yield findMilestoneByName(milestoneName);
-            core_1.setOutput('milestoneId', milestoneId);
-            if (milestoneId === 0) {
-                throw new Error(`Milestone with name '${milestoneName}'`);
-            }
+            const token = core_1.getInput('repo-token', { required: true });
+            const searchName = core_1.getInput('milestone', { required: true });
+            const { title, id } = yield milestone_actions_1.findMilestoneByName(token, searchName);
+            milestone_actions_1.assignMilestoneOnPullRequest(token, id);
+            core_1.info(`Milestone ${title} has been assigned to PR #${(_a = github_1.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number}`);
         }
         catch ({ message }) {
             core_1.setFailed(message);
@@ -53,6 +35,70 @@ function run() {
     });
 }
 run();
+
+
+/***/ }),
+
+/***/ 415:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.assignMilestoneOnPullRequest = exports.findMilestoneByName = void 0;
+const graphql_1 = __nccwpck_require__(668);
+const github_1 = __nccwpck_require__(438);
+const findMilestoneByName = (repoToken, milestoneName) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c;
+    const { repository } = yield graphql_1.graphql({
+        query: `query fetchMilestone($owner: String!, $repo: String!, $milestoneQuery: String!) {
+      repository(owner:$owner, name:$repo) {
+        milestones(query:$milestoneQuery, last: 1) {
+          nodes {
+            number
+            title
+          }
+        }
+      }
+    }`,
+        owner: github_1.context.repo.owner,
+        repo: github_1.context.repo.repo,
+        milestoneQuery: milestoneName,
+        headers: {
+            authorization: `token ${repoToken}`,
+        },
+    });
+    if ((((_a = repository.milestones.nodes[0]) === null || _a === void 0 ? void 0 : _a.number) || 0) === 0) {
+        throw new Error(`Milestone with name '${milestoneName}' not found`);
+    }
+    return {
+        title: ((_b = repository.milestones.nodes[0]) === null || _b === void 0 ? void 0 : _b.title) || '',
+        id: ((_c = repository.milestones.nodes[0]) === null || _c === void 0 ? void 0 : _c.number) || 0,
+    };
+});
+exports.findMilestoneByName = findMilestoneByName;
+const assignMilestoneOnPullRequest = (token, milestoneId) => __awaiter(void 0, void 0, void 0, function* () {
+    if (github_1.context.payload.pull_request === undefined) {
+        throw new Error('Cannot get pull_request payload. Ensure a pull_request event has been triggered');
+    }
+    const octokit = github_1.getOctokit(token);
+    yield octokit.rest.issues.update({
+        owner: github_1.context.repo.owner,
+        repo: github_1.context.repo.repo,
+        issue_number: github_1.context.payload.pull_request.number,
+        milestone: milestoneId,
+    });
+});
+exports.assignMilestoneOnPullRequest = assignMilestoneOnPullRequest;
 
 
 /***/ }),
@@ -617,7 +663,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getOctokit = exports.context = void 0;
 const Context = __importStar(__nccwpck_require__(53));
-const utils_1 = __nccwpck_require__(656);
+const utils_1 = __nccwpck_require__(30);
 exports.context = new Context.Context();
 /**
  * Returns a hydrated octokit ready to use for GitHub Actions
@@ -683,7 +729,7 @@ exports.getApiBaseUrl = getApiBaseUrl;
 
 /***/ }),
 
-/***/ 656:
+/***/ 30:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -1419,10 +1465,10 @@ exports.createTokenAuth = createTokenAuth;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 
-var universalUserAgent = __nccwpck_require__(30);
+var universalUserAgent = __nccwpck_require__(429);
 var beforeAfterHook = __nccwpck_require__(682);
 var request = __nccwpck_require__(234);
-var graphql = __nccwpck_require__(467);
+var graphql = __nccwpck_require__(668);
 var authToken = __nccwpck_require__(334);
 
 function _objectWithoutPropertiesLoose(source, excluded) {
@@ -1604,7 +1650,7 @@ exports.Octokit = Octokit;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var isPlainObject = __nccwpck_require__(287);
-var universalUserAgent = __nccwpck_require__(30);
+var universalUserAgent = __nccwpck_require__(429);
 
 function lowercaseKeys(object) {
   if (!object) {
@@ -1993,7 +2039,7 @@ exports.endpoint = endpoint;
 
 /***/ }),
 
-/***/ 467:
+/***/ 668:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
@@ -2002,7 +2048,7 @@ exports.endpoint = endpoint;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var request = __nccwpck_require__(234);
-var universalUserAgent = __nccwpck_require__(30);
+var universalUserAgent = __nccwpck_require__(429);
 
 const VERSION = "4.6.4";
 
@@ -3672,9 +3718,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var endpoint = __nccwpck_require__(440);
-var universalUserAgent = __nccwpck_require__(30);
+var universalUserAgent = __nccwpck_require__(429);
 var isPlainObject = __nccwpck_require__(287);
-var nodeFetch = _interopDefault(__nccwpck_require__(419));
+var nodeFetch = _interopDefault(__nccwpck_require__(467));
 var requestError = __nccwpck_require__(537);
 
 const VERSION = "5.6.0";
@@ -4097,7 +4143,7 @@ exports.isPlainObject = isPlainObject;
 
 /***/ }),
 
-/***/ 419:
+/***/ 467:
 /***/ ((module, exports, __nccwpck_require__) => {
 
 "use strict";
@@ -6083,7 +6129,7 @@ exports.debug = debug; // for test
 
 /***/ }),
 
-/***/ 30:
+/***/ 429:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
