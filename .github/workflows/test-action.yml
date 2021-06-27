@@ -1,4 +1,4 @@
-name: 'Auto Project Assign'
+name: 'test: Auto Project Assign'
 
 on:
   pull_request:
