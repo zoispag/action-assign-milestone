@@ -2,6 +2,7 @@
 
 This action will assign a milestone to a Pull Request
 
+
 ## Inputs
 
 | **Name**     | **Description**             | **Required** |
