@@ -1,5 +1,5 @@
-import { graphql } from '@octokit/graphql'
 import { context, getOctokit } from '@actions/github'
+import { graphql } from '@octokit/graphql'
 
 const findMilestoneByName = async (
   repoToken: string,
