@@ -17,7 +17,7 @@ async function run(): Promise<void> {
       `Milestone ${title} has been assigned to PR #${context.payload.pull_request?.number}`,
     )
   } catch ({ message }) {
-    setFailed(message)
+    setFailed(message as string)
   }
 }
 
