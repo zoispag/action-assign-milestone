@@ -3,8 +3,8 @@ import { graphql } from '@octokit/graphql'
 
 const findMilestoneByName = async (
   repoToken: string,
-  milestoneName: String,
-): Promise<{ title: String; id: Number }> => {
+  milestoneName: string,
+): Promise<{ title: string; id: number }> => {
   const { repository } = await graphql({
     query: `query fetchMilestone($owner: String!, $repo: String!, $milestoneQuery: String!) {
       repository(owner:$owner, name:$repo) {
@@ -36,7 +36,7 @@ const findMilestoneByName = async (
 
 const assignMilestoneOnPullRequest = async (
   token: string,
-  milestoneId: Number,
+  milestoneId: number,
 ): Promise<void> => {
   if (context.payload.pull_request === undefined) {
     throw new Error(
