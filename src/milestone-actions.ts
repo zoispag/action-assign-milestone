@@ -1,11 +1,24 @@
 import { context, getOctokit } from '@actions/github'
 import { graphql } from '@octokit/graphql'
 
+type Milestone = {
+  title: string
+  number: number
+}
+
+type Repository = {
+  repository: {
+    milestones: {
+      nodes: Milestone[]
+    }
+  }
+}
+
 const findMilestoneByName = async (
   repoToken: string,
   milestoneName: string,
 ): Promise<{ title: string; id: number }> => {
-  const { repository } = await graphql({
+  const { repository } = await graphql<Repository>({
     query: `query fetchMilestone($owner: String!, $repo: String!, $milestoneQuery: String!) {
       repository(owner:$owner, name:$repo) {
         milestones(query:$milestoneQuery, last: 1) {
