@@ -1,7 +1,7 @@
 import {
   assignMilestoneOnPullRequest,
   findMilestoneByName,
-} from './milestone-actions'
+} from './milestone-actions.js'
 import { getInput, info, setFailed } from '@actions/core'
 import { context } from '@actions/github'
 
@@ -17,8 +17,8 @@ async function run(): Promise<void> {
       /* eslint-disable-next-line i18n-text/no-en */
       `Milestone ${title} has been assigned to PR #${context.payload.pull_request?.number}`,
     )
-  } catch ({ message }) {
-    setFailed(message as string)
+  } catch (error) {
+    setFailed(error instanceof Error ? error.message : String(error))
   }
 }
 
