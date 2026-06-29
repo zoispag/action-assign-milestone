@@ -41,13 +41,12 @@ jobs:
 
 
       - name: Create release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v3
         if: "steps.tag.outputs.value != ''"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ steps.tag.outputs.value }}
-          release_name: Release ${{ steps.tag.outputs.value }}
+          name: Release ${{ steps.tag.outputs.value }}
           body: ${{ steps.bumpr.outputs.message }}
           draft: false
           prerelease: false
