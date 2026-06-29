@@ -1,5 +1,4 @@
 import { context, getOctokit } from '@actions/github'
-import { graphql } from '@octokit/graphql'
 
 type Milestone = {
   title: string
@@ -18,8 +17,9 @@ const findMilestoneByName = async (
   repoToken: string,
   milestoneName: string,
 ): Promise<{ title: string; id: number }> => {
-  const { repository } = await graphql<Repository>({
-    query: `query fetchMilestone($owner: String!, $repo: String!, $milestoneQuery: String!) {
+  const octokit = getOctokit(repoToken)
+  const { repository } = await octokit.graphql<Repository>(
+    `query fetchMilestone($owner: String!, $repo: String!, $milestoneQuery: String!) {
       repository(owner:$owner, name:$repo) {
         milestones(query:$milestoneQuery, last: 1) {
           nodes {
@@ -29,13 +29,12 @@ const findMilestoneByName = async (
         }
       }
     }`,
-    owner: context.repo.owner,
-    repo: context.repo.repo,
-    milestoneQuery: milestoneName,
-    headers: {
-      authorization: `token ${repoToken}`,
+    {
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      milestoneQuery: milestoneName,
     },
-  })
+  )
 
   if ((repository.milestones.nodes[0]?.number || 0) === 0) {
     throw new Error(`Milestone with name '${milestoneName}' not found`)
