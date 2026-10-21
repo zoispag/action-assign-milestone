@@ -11,7 +11,7 @@ async function run(): Promise<void> {
     const searchName = getInput('milestone', { required: true })
 
     const { title, id } = await findMilestoneByName(token, searchName)
-    assignMilestoneOnPullRequest(token, id)
+    await assignMilestoneOnPullRequest(token, id)
 
     info(
       /* eslint-disable-next-line i18n-text/no-en */

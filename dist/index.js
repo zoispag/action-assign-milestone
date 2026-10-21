@@ -36470,7 +36470,7 @@ async function run() {
         const token = getInput('repo-token', { required: true });
         const searchName = getInput('milestone', { required: true });
         const { title, id } = await findMilestoneByName(token, searchName);
-        assignMilestoneOnPullRequest(token, id);
+        await assignMilestoneOnPullRequest(token, id);
         info(
         /* eslint-disable-next-line i18n-text/no-en */
         `Milestone ${title} has been assigned to PR #${github_context.payload.pull_request?.number}`);
